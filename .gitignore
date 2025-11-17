@@ -1,0 +1,32 @@
+# Unity
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+UserSettings/
+MemoryCaptures/
+[Ll]ibrary/PackageCache/
+
+# IDE / proyectos
+*.csproj
+*.sln
+*.user
+*.userprefs
+*.pidb
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+
+# SO
+.DS_Store
+Thumbs.db
+
+# Exportados
+*.apk
+*.aab
+*.app
+*.unitypackage
