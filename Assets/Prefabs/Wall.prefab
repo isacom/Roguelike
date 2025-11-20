@@ -1,0 +1,57 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &4397599048463724400
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6303789910088987649}
+  - component: {fileID: 4594468842993270966}
+  m_Layer: 0
+  m_Name: Wall
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6303789910088987649
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4397599048463724400}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4594468842993270966
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4397599048463724400}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1b10332386d7fad4dbf523a7675b8eb6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WallObject
+  ObstacleTile:
+  - {fileID: 11400000, guid: c0f915b2db5a5af4f9f51d3d2fb35761, type: 2}
+  - {fileID: 11400000, guid: e85cd24af1c1532f195f4fbccc5088c4, type: 2}
+  - {fileID: 11400000, guid: 2a3e2e9b50443cc8287d9af7fc0071bf, type: 2}
+  - {fileID: 11400000, guid: 5f1f2474c74224be997f915f57304c06, type: 2}
+  - {fileID: 11400000, guid: 25a96c4258e2154829c269188fc244b5, type: 2}
+  - {fileID: 11400000, guid: 6f23af91bd5f8fd4a8572bf2a1b6f33d, type: 2}
+  - {fileID: 11400000, guid: e10e9e58b6ce4bb3cae6df632e850135, type: 2}
+  - {fileID: 11400000, guid: b921fc53c1b2c4ee296b8b535e2367d3, type: 2}
+  - {fileID: 11400000, guid: ac4a7db073a591c9d9f8dafb373a6de3, type: 2}
+  MaxHealth: 3
