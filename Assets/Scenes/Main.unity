@@ -388,6 +388,9 @@ MonoBehaviour:
   - {fileID: -624781527526735967, guid: f40ed8ffb813bc94fb2a10e664ad648f, type: 3}
   WallPrefab:
   - {fileID: 1230881858}
+  EnemyPrefab:
+  - {fileID: 1007892038212850681, guid: bf09a8f0b3e4e1291a94f0d87433e1f0, type: 3}
+  - {fileID: 1007892038212850681, guid: a9031efebfa733165a62adfb88acd71d, type: 3}
   ExitCellPrefab: {fileID: 4589145424913316678, guid: 6ad67f531edfdff37bd9fa77b53d8486, type: 3}
 --- !u!1 &1474109262
 GameObject:
@@ -467,6 +470,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ebcaa142c436778469e638e4706631aa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
+  MoveSpeed: 1
 --- !u!212 &1489966808
 SpriteRenderer:
   m_ObjectHideFlags: 0

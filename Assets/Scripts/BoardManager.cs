@@ -22,6 +22,7 @@ public class BoardManager : MonoBehaviour
     public Tile[] WallTiles;
     public FoodObject[] FoodPrefab;
     public WallObject[] WallPrefab;
+    public EnemyObject[] EnemyPrefab;
     public ExitCellObject ExitCellPrefab;
 
     public void Init()
@@ -67,6 +68,7 @@ public class BoardManager : MonoBehaviour
   
         GenerateWall();
         GenerateFood();
+        GenerateEnemy();
     }
 
     public Vector3 CellToWorld(Vector2Int cellIndex)
@@ -114,8 +116,23 @@ public class BoardManager : MonoBehaviour
             WallObject newWall = Instantiate(WallPrefab[randomWall]);
             AddObject(newWall, coord);
         }
+        
     }
-
+    void GenerateEnemy()
+    {
+        int enemyCount = 2;
+        for (int i = 0; i < enemyCount; ++i)
+        {
+            if (m_EmptyCellsList.Count == 0)
+                break;
+            int randomEnemy = Random.Range(0, EnemyPrefab.Length);
+            int randomIndex = Random.Range(0, m_EmptyCellsList.Count);
+            Vector2Int coord = m_EmptyCellsList[randomIndex];
+            m_EmptyCellsList.RemoveAt(randomIndex);
+            EnemyObject newEnemy = Instantiate(EnemyPrefab[randomEnemy]);
+            AddObject(newEnemy, coord);
+        }
+    }
     public void SetCellTile(Vector2Int cellIndex, Tile tile)
     {
         m_Tilemap.SetTile(new Vector3Int(cellIndex.x, cellIndex.y, 0), tile);
