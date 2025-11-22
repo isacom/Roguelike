@@ -4,13 +4,16 @@ using UnityEngine.InputSystem;
 public class PlayerController : MonoBehaviour
 {
     public float MoveSpeed = 1;
-    
+
     private BoardManager m_Board;
     private Vector2Int m_CellPosition;
     private bool m_IsGameOver;
     public static Animator Animator;
     private bool m_IsMoving;
     private Vector3 m_MoveTarget;
+    private float idleTimer = 0f;
+    private AudioManager sm;
+    public float idleThreshold = 1f;
     public Vector2Int CurrentCell
     {
         get { return m_CellPosition; }
@@ -18,6 +21,7 @@ public class PlayerController : MonoBehaviour
     private void Awake()
     {
         Animator = GetComponent<Animator>();
+        sm = FindObjectOfType<AudioManager>();
     }
 
     public void Init()
@@ -92,6 +96,7 @@ public class PlayerController : MonoBehaviour
 
         if (hasMoved)
         {
+            idleTimer = 0f;
             BoardManager.CellData cellData = m_Board.GetCellData(newCellTarget);
 
             if (cellData != null && cellData.Passable)
@@ -101,6 +106,7 @@ public class PlayerController : MonoBehaviour
                 if (cellData.ContainedObject == null)
                 {
                     MoveTo(newCellTarget, true);
+                    sm.PlayFootstep();
                 }
                 else if (cellData.ContainedObject.PlayerWantsToEnter())
                 {
@@ -130,6 +136,13 @@ public class PlayerController : MonoBehaviour
                 if (cellData.ContainedObject != null)
                     cellData.ContainedObject.PlayerEntered();
             }
+        }
+        idleTimer += Time.deltaTime;
+
+        if (idleTimer >= idleThreshold)
+        {
+            GameManager.Instance.TurnManager.Tick();
+            idleTimer = 0f;
         }
     }
 }

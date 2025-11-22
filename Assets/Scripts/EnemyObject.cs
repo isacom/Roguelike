@@ -6,11 +6,13 @@ public class EnemyObject : CellObject
 
     private int m_CurrentHealth;
     private Animator m_Animator;
+    private AudioManager sm;
 
     private void Awake()
     {
         m_Animator = GetComponent<Animator>();
         GameManager.Instance.TurnManager.OnTick += TurnHappened;
+        sm = FindObjectOfType<AudioManager>();
     }
 
     private void OnDestroy()
@@ -27,10 +29,11 @@ public class EnemyObject : CellObject
     public override bool PlayerWantsToEnter()
     {
         m_CurrentHealth -= 1;
-
+        sm.PlayChop();
         if (m_CurrentHealth <= 0)
         {
             Destroy(gameObject);
+            sm.PlayDown();
         }
 
         return false;
@@ -72,7 +75,7 @@ public class EnemyObject : CellObject
             || (yDist == 0 && absXDist == 1))
         {
             GameManager.Instance.ChangeFood(-3);
-
+            sm.PlayEnemy();
             m_Animator.SetBool("Moving", false);
             m_Animator.SetTrigger("Attack");
             PlayerController.Animator.SetTrigger("Damage");

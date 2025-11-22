@@ -45,7 +45,7 @@ public class GameManager : MonoBehaviour
         m_GameOverPanel.style.visibility = Visibility.Hidden;
   
         m_CurrentLevel = 1;
-        m_FoodAmount = 20;
+        m_FoodAmount = 30;
         m_FoodLabel.text = "Food : " + m_FoodAmount;
   
         BoardManager.Clean();
@@ -59,8 +59,14 @@ public class GameManager : MonoBehaviour
         BoardManager.Clean();
         BoardManager.Init();
         PlayerController.Spawn(BoardManager, new Vector2Int(1,1));
-
         m_CurrentLevel++;
+        
+        if (m_CurrentLevel % 5 == 0)
+        {
+            BoardManager.enemyCount++;
+            BoardManager.maxWalls += 2;
+            BoardManager.minWalls += 1;
+        }
     }
     void OnTurnHappen()
     {

@@ -24,6 +24,10 @@ public class BoardManager : MonoBehaviour
     public WallObject[] WallPrefab;
     public EnemyObject[] EnemyPrefab;
     public ExitCellObject ExitCellPrefab;
+    public int foodCount;
+    public int maxWalls;
+    public int minWalls;
+    public int enemyCount;
 
     public void Init()
     {
@@ -89,7 +93,6 @@ public class BoardManager : MonoBehaviour
     
     void GenerateFood()
     {
-        int foodCount = 5;
         for (int i = 0; i < foodCount; ++i)
         {
             if (m_EmptyCellsList.Count == 0)
@@ -104,7 +107,7 @@ public class BoardManager : MonoBehaviour
     }
     void GenerateWall()
     {
-        int wallCount = Random.Range(6, 10);
+        int wallCount = Random.Range(minWalls, maxWalls);
         for (int i = 0; i < wallCount; ++i)
         {
             if (m_EmptyCellsList.Count == 0)
@@ -120,7 +123,6 @@ public class BoardManager : MonoBehaviour
     }
     void GenerateEnemy()
     {
-        int enemyCount = 2;
         for (int i = 0; i < enemyCount; ++i)
         {
             if (m_EmptyCellsList.Count == 0)
