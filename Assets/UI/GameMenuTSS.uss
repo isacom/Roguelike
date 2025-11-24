@@ -1,4 +1,6 @@
 :root {
+}
 
-
+.menu-button:hover {
+    background-color: rgb(138, 138, 138);
 }
