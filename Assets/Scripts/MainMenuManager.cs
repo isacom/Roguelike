@@ -1,47 +1,47 @@
 using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEngine.SceneManagement;
+using Application = UnityEngine.Application;
 
 public class MainMenuManager : MonoBehaviour
 {
     private Button StartButton;
     private Button QuitButton;
+    private Button OptionsButton;
 
+    public GameObject UiOptions;   // <-- UI Options separado
+
+    void Start()
+    {
+        UiOptions.SetActive(false);
+    }
     void OnEnable()
     {
         var uiDocument = GetComponent<UIDocument>();
-        if (uiDocument == null)
-        {
-            Debug.LogError("No hay UIDocument en el mismo GameObject que MainMenuManager");
-            return;
-        }
-
         var root = uiDocument.rootVisualElement;
+        StartButton = root.Q<Button>("StartButton");
+        QuitButton = root.Q<Button>("QuitButton");
+        OptionsButton = root.Q<Button>("SettingsButton");
 
-        // IMPORTANTE: el name tiene que coincidir EXACTAMENTE con el que pusiste en UI Builder
-        StartButton = root.Q<Button>(name: "StartButton");
-        QuitButton  = root.Q<Button>(name: "QuitButton");
-
-        if (StartButton == null)
-            Debug.LogError("No se ha encontrado el botón 'StartButton' en el UIDocument");
-        else
-            StartButton.clicked += OnStartClicked;
-
-        if (QuitButton == null)
-            Debug.LogError("No se ha encontrado el botón 'QuitButton' en el UIDocument");
-        else
-            QuitButton.clicked += OnClickQuit;
+        if (StartButton != null) StartButton.clicked += OnStartClicked;
+        if (QuitButton != null) QuitButton.clicked += OnQuitClicked;
+        if (OptionsButton != null) OptionsButton.clicked += OnOptionsClicked;
     }
 
     private void OnStartClicked()
     {
-        Debug.Log("Start pulsado, cargando escena Main...");
-        SceneManager.LoadScene("Main"); // Asegúrate que la escena se llama EXACTAMENTE así
+        SceneManager.LoadScene("Main");
     }
 
-    private void OnClickQuit()
+    private void OnQuitClicked()
     {
-        Debug.Log("Quit pulsado, cerrando juego...");
         Application.Quit();
+    }
+
+    private void OnOptionsClicked()
+    {
+        // Activa el UI Options
+        UiOptions.SetActive(true);
+
     }
 }
