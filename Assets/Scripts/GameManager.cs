@@ -30,6 +30,7 @@ public class GameManager : MonoBehaviour
   
     void Start()
     {
+        Debug.Log("JSON path: " + Application.persistentDataPath);
         TurnManager = new TurnManager();
         TurnManager.OnTick += OnTurnHappen;
   
@@ -78,7 +79,7 @@ public class GameManager : MonoBehaviour
     {
         m_FoodAmount += amount;
         m_FoodLabel.text = "Food : " + m_FoodAmount;
-
+        BoardManager.SaveCurrentLevel(m_FoodAmount);
         if (m_FoodAmount <= 0)
         {
             PlayerController.GameOver();

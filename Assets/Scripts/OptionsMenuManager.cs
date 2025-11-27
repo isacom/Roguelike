@@ -29,6 +29,7 @@ public class OptionsMenuManager : MonoBehaviour
         }
         if (ReturnButton != null) ReturnButton.clicked += OnReturnClicked;
         if (CloseButton != null) CloseButton.clicked += OnCloseClicked;
+        
         if (sliderSound != null)
         {
             sliderSound.value = Mathf.RoundToInt(AudioManager.Instance.soundVolume * 100f);
@@ -90,7 +91,9 @@ public class OptionsMenuManager : MonoBehaviour
     }
     private void OnCloseClicked()
     {
-        TogglePauseMenu();
+        if (ReturnButton != null)
+            TogglePauseMenu();
+        
         UiOptions.SetActive(false);
 
     }

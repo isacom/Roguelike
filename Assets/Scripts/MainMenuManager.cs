@@ -13,8 +13,6 @@ public class MainMenuManager : MonoBehaviour
 
     void Start()
     {
-        UiOptions.SetActive(false);
-        
         if (AudioManager.Instance != null)
             AudioManager.Instance.PlayMenuMusic();
     }
