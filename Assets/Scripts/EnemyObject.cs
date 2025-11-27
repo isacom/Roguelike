@@ -7,6 +7,7 @@ public class EnemyObject : CellObject
     private int m_CurrentHealth;
     private Animator m_Animator;
     private AudioManager sm;
+    
 
     private void Awake()
     {

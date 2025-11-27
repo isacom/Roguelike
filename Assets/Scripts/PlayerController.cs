@@ -1,10 +1,11 @@
+using Unity.Android.Gradle.Manifest;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
     public float MoveSpeed = 1;
-
+    public OptionsMenuManager UIOptions;
     private BoardManager m_Board;
     private Vector2Int m_CellPosition;
     private bool m_IsGameOver;
@@ -59,90 +60,104 @@ public class PlayerController : MonoBehaviour
     }
 
     private void Update()
+{
+    if (m_IsGameOver)
     {
-        if (m_IsGameOver)
+        if (Keyboard.current.enterKey.wasPressedThisFrame)
         {
-            if (Keyboard.current.enterKey.wasPressedThisFrame)
-            {
-                GameManager.Instance.StartNewGame();
-            }
-
-            return;
+            GameManager.Instance.StartNewGame();
         }
+        return;
+    }
 
-        Vector2Int newCellTarget = m_CellPosition;
-        bool hasMoved = false;
+    // ESC para abrir/cerrar menú
+    if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+    {
+        if (UIOptions != null)
+            UIOptions.TogglePauseMenu();
+        else
+            Debug.LogWarning("UIOptions (OptionsMenuManager) es null en PlayerController.");
+    }
 
-        if (Keyboard.current.upArrowKey.wasPressedThisFrame)
-        {
-            newCellTarget.y += 1;
-            hasMoved = true;
-        }
-        else if (Keyboard.current.downArrowKey.wasPressedThisFrame)
-        {
-            newCellTarget.y -= 1;
-            hasMoved = true;
-        }
-        else if (Keyboard.current.rightArrowKey.wasPressedThisFrame)
-        {
-            newCellTarget.x += 1;
-            hasMoved = true;
-        }
-        else if (Keyboard.current.leftArrowKey.wasPressedThisFrame)
-        {
-            newCellTarget.x -= 1;
-            hasMoved = true;
-        }
+    // Si el juego está en pausa, no aceptar input de movimiento ni ticks
+    if (GameManager.Instance.TurnManager.IsPaused)
+        return;
 
-        if (hasMoved)
-        {
-            idleTimer = 0f;
-            BoardManager.CellData cellData = m_Board.GetCellData(newCellTarget);
+    Vector2Int newCellTarget = m_CellPosition;
+    bool hasMoved = false;
 
-            if (cellData != null && cellData.Passable)
-            {
-                GameManager.Instance.TurnManager.Tick();
+    if (Keyboard.current.upArrowKey.wasPressedThisFrame)
+    {
+        newCellTarget.y += 1;
+        hasMoved = true;
+    }
+    else if (Keyboard.current.downArrowKey.wasPressedThisFrame)
+    {
+        newCellTarget.y -= 1;
+        hasMoved = true;
+    }
+    else if (Keyboard.current.rightArrowKey.wasPressedThisFrame)
+    {
+        newCellTarget.x += 1;
+        hasMoved = true;
+    }
+    else if (Keyboard.current.leftArrowKey.wasPressedThisFrame)
+    {
+        newCellTarget.x -= 1;
+        hasMoved = true;
+    }
 
-                if (cellData.ContainedObject == null)
-                {
-                    MoveTo(newCellTarget, true);
-                    sm.PlayFootstep();
-                }
-                else if (cellData.ContainedObject.PlayerWantsToEnter())
-                {
-                    MoveTo(newCellTarget, true);
-                    cellData.ContainedObject.PlayerEntered();
-                }
-                else
-                {
-                    Animator.SetTrigger("Attack");
-                }
-            }
-        }
+    if (hasMoved)
+    {
+        idleTimer = 0f;
+        BoardManager.CellData cellData = m_Board.GetCellData(newCellTarget);
 
-        if (m_IsMoving)
-        {
-            transform.position = Vector3.MoveTowards(
-                transform.position,
-                m_MoveTarget,
-                MoveSpeed * Time.deltaTime
-            );
-
-            if (transform.position == m_MoveTarget)
-            {
-                m_IsMoving = false;
-                Animator.SetBool("Moving", false);
-                var cellData = m_Board.GetCellData(m_CellPosition);
-                if (cellData.ContainedObject != null)
-                    cellData.ContainedObject.PlayerEntered();
-            }
-        }
-        idleTimer += Time.deltaTime;
-
-        if (idleTimer >= idleThreshold)
+        if (cellData != null && cellData.Passable)
         {
             GameManager.Instance.TurnManager.Tick();
-            idleTimer = 0f;
+
+            if (cellData.ContainedObject == null)
+            {
+                MoveTo(newCellTarget, true);
+                sm.PlayFootstep();
+            }
+            else if (cellData.ContainedObject.PlayerWantsToEnter())
+            {
+                MoveTo(newCellTarget, true);
+                cellData.ContainedObject.PlayerEntered();
+            }
+            else
+            {
+                Animator.SetTrigger("Attack");
+            }
         }
     }
+
+    if (m_IsMoving)
+    {
+        transform.position = Vector3.MoveTowards(
+            transform.position,
+            m_MoveTarget,
+            MoveSpeed * Time.deltaTime
+        );
+
+        if (transform.position == m_MoveTarget)
+        {
+            m_IsMoving = false;
+            Animator.SetBool("Moving", false);
+            var cellData = m_Board.GetCellData(m_CellPosition);
+            if (cellData.ContainedObject != null)
+                cellData.ContainedObject.PlayerEntered();
+        }
+    }
+
+    idleTimer += Time.deltaTime;
+
+    if (idleTimer >= idleThreshold)
+    {
+        GameManager.Instance.TurnManager.Tick();
+        idleTimer = 0f;
+    }
+}
+
 }

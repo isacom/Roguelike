@@ -6,7 +6,8 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance { get; private set; }
   
     public BoardManager BoardManager;
-    public PlayerController PlayerController; 
+    public PlayerController PlayerController;
+    public EnemyObject EnemyObject;
     public TurnManager TurnManager { get; private set;}
     public UIDocument UIDoc;
     
