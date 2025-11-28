@@ -5,20 +5,40 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 using Random = UnityEngine.Random;
 
-
 public class BoardManager : MonoBehaviour
 {
+    // ====== Tipos internos ======
+
     public class CellData
     {
         public bool Passable;
-        public CellObject ContainedObject; 
+        public CellObject ContainedObject;
     }
-    
+
+    [Serializable]
+    public class ObjectData
+    {
+        public int prefabIndex;
+        public Vector2Int cell;
+    }
+
+    [Serializable]
+    public class LevelData
+    {
+        public Vector2Int playerCell;
+        public List<ObjectData> walls   = new List<ObjectData>();
+        public List<ObjectData> foods   = new List<ObjectData>();
+        public List<ObjectData> enemies = new List<ObjectData>();
+        public int foodCount;
+    }
+
+    // ====== Campos de tablero / tiles ======
+
     private List<Vector2Int> m_EmptyCellsList;
     private CellData[,] m_BoardData;
     private Tilemap m_Tilemap;
     private Grid m_Grid;
-    public static LevelData currentLevelData = new LevelData();
+
     public int Width;
     public int Height;
     public Tile[] GroundTiles;
@@ -27,10 +47,21 @@ public class BoardManager : MonoBehaviour
     public WallObject[] WallPrefab;
     public EnemyObject[] EnemyPrefab;
     public ExitCellObject ExitCellPrefab;
+
     public int foodCount;
     public int maxWalls;
     public int minWalls;
     public int enemyCount;
+
+    // Datos actuales del nivel (lo que se guarda)
+    public static LevelData currentLevelData = new LevelData();
+
+    // Flag global para saber si, al entrar en la escena,
+    // hay que cargar un nivel guardado o generar uno nuevo
+    public static bool ShouldLoadSavedLevel = false;
+
+    // ====== SaveSystem interno ======
+
     public static class SaveSystem
     {
         static string GetPath(string fileName)
@@ -59,60 +90,114 @@ public class BoardManager : MonoBehaviour
             return JsonUtility.FromJson<LevelData>(json);
         }
     }
-    public void SaveCurrentLevel(int Food)
+
+    // ====== API pública de guardado/carga ======
+
+    public void SaveCurrentLevel(int food)
     {
-        SaveSystem.SaveLevel(currentLevelData, "nivel1.json",Food);
+        SaveSystem.SaveLevel(currentLevelData, "nivel1.json", food);
     }
+
+    // Guardar la celda del jugador
     public void SpawnPlayer(Vector2Int playerCell)
     {
         currentLevelData.playerCell = playerCell;
     }
-    public void LoadLevel()
+
+    /// <summary>
+    /// Carga el nivel completo desde un archivo JSON.
+    /// Limpia el tablero, reconstruye el suelo/bordes,
+    /// instancia paredes, enemigos, comida y recoloca al jugador.
+    /// </summary>
+    public void LoadLevelFromFile(string fileName = "nivel1.json")
     {
-        LevelData data = SaveSystem.LoadLevel("nivel1.json");
-        if (data == null) return;
+        // Limpia el tablero actual (si hay algo)
+        Clean();
+
+        LevelData data = SaveSystem.LoadLevel(fileName);
+        if (data == null)
+            return;
 
         currentLevelData = data;
+
+        // Reconstruir tablero base (suelo + bordes + salida)
+        BuildBaseBoard();
+
+        // 1) PAREDES
+        foreach (var w in data.walls)
+        {
+            var newWall = Instantiate(WallPrefab[w.prefabIndex]);
+            AddObject(newWall, w.cell);
+        }
+
+        // 2) ENEMIGOS
+        foreach (var e in data.enemies)
+        {
+            var newEnemy = Instantiate(EnemyPrefab[e.prefabIndex]);
+            AddObject(newEnemy, e.cell);
+        }
+
+        // 3) COMIDA
         foreach (var f in data.foods)
         {
             var newFood = Instantiate(FoodPrefab[f.prefabIndex]);
             AddObject(newFood, f.cell);
         }
 
+        // 4) Contador de comida
         foodCount = data.foodCount;
+
+        // 5) Recolocar al jugador
+        if (GameManager.Instance != null && GameManager.Instance.PlayerController != null)
+        {
+            GameManager.Instance.PlayerController.Spawn(this, data.playerCell);
+        }
+
+        Debug.Log("Nivel cargado desde JSON");
     }
 
-    [Serializable]
-    public class ObjectData
+    // Wrapper por si quieres seguir usando el nombre antiguo
+    public void LoadLevel()
     {
-        public int prefabIndex;
-        public Vector2Int cell;
+        LoadLevelFromFile("nivel1.json");
     }
 
-    [Serializable]
-    public class LevelData
-    {
-        public Vector2Int playerCell;
-        public List<ObjectData> walls  = new List<ObjectData>();
-        public List<ObjectData> foods  = new List<ObjectData>();
-        public List<ObjectData> enemies = new List<ObjectData>();
-        public int foodCount;
-    }
+    // ====== Inicialización de niveles nuevos ======
+
+    /// <summary>
+    /// Inicializa un nivel nuevo, generación procedural.
+    /// </summary>
     public void Init()
+    {
+        // Reinicia los datos del nivel
+        currentLevelData = new LevelData();
+
+        BuildBaseBoard();
+
+        GenerateWall();
+        GenerateFood();
+        GenerateEnemy();
+    }
+
+    /// <summary>
+    /// Construye solo el tablero base (suelo, bordes, salida),
+    /// rellena m_BoardData y m_EmptyCellsList.
+    /// </summary>
+    void BuildBaseBoard()
     {
         m_Tilemap = GetComponentInChildren<Tilemap>();
         m_Grid = GetComponentInChildren<Grid>();
         m_EmptyCellsList = new List<Vector2Int>();
         m_BoardData = new CellData[Width, Height];
-        
+
         for (int y = 0; y < Height; ++y)
         {
-            for(int x = 0; x < Width; ++x)
+            for (int x = 0; x < Width; ++x)
             {
                 Tile tile;
                 m_BoardData[x, y] = new CellData();
-          
-                if(x == 0 || y == 0 || x == Width - 1 || y == Height - 1)
+
+                if (x == 0 || y == 0 || x == Width - 1 || y == Height - 1)
                 {
                     tile = WallTiles[Random.Range(0, WallTiles.Length)];
                     m_BoardData[x, y].Passable = false;
@@ -121,23 +206,24 @@ public class BoardManager : MonoBehaviour
                 {
                     tile = GroundTiles[Random.Range(0, GroundTiles.Length)];
                     m_BoardData[x, y].Passable = true;
-              
+
                     m_EmptyCellsList.Add(new Vector2Int(x, y));
                 }
-          
+
                 m_Tilemap.SetTile(new Vector3Int(x, y, 0), tile);
             }
         }
-  
+
+        // Reservar (1,1) para el jugador
         m_EmptyCellsList.Remove(new Vector2Int(1, 1));
+
+        // Salida en esquina inferior derecha
         Vector2Int endCoord = new Vector2Int(Width - 2, Height - 2);
         AddObject(Instantiate(ExitCellPrefab), endCoord);
         m_EmptyCellsList.Remove(endCoord);
-  
-        GenerateWall();
-        GenerateFood();
-        GenerateEnemy();
     }
+
+    // ====== Utilidades de tablero ======
 
     public Vector3 CellToWorld(Vector2Int cellIndex)
     {
@@ -147,14 +233,34 @@ public class BoardManager : MonoBehaviour
     public CellData GetCellData(Vector2Int cellIndex)
     {
         if (cellIndex.x < 0 || cellIndex.x >= Width
-                            || cellIndex.y < 0 || cellIndex.y >= Height)
+            || cellIndex.y < 0 || cellIndex.y >= Height)
         {
             return null;
         }
 
         return m_BoardData[cellIndex.x, cellIndex.y];
     }
-    
+
+    public void SetCellTile(Vector2Int cellIndex, Tile tile)
+    {
+        m_Tilemap.SetTile(new Vector3Int(cellIndex.x, cellIndex.y, 0), tile);
+    }
+
+    public Tile GetCellTile(Vector2Int cellIndex)
+    {
+        return m_Tilemap.GetTile<Tile>(new Vector3Int(cellIndex.x, cellIndex.y, 0));
+    }
+
+    void AddObject(CellObject obj, Vector2Int coord)
+    {
+        CellData data = m_BoardData[coord.x, coord.y];
+        obj.transform.position = CellToWorld(coord);
+        data.ContainedObject = obj;
+        obj.Init(coord);
+    }
+
+    // ====== Generadores aleatorios ======
+
     void GenerateFood()
     {
         for (int i = 0; i < foodCount; ++i)
@@ -170,8 +276,12 @@ public class BoardManager : MonoBehaviour
             FoodObject newFood = Instantiate(FoodPrefab[randomFood]);
             AddObject(newFood, coord);
 
-            // 👉 Guardar en LevelData
-            currentLevelData.foods.Add(new ObjectData {prefabIndex = randomFood, cell = coord });
+            // Guardar en LevelData
+            currentLevelData.foods.Add(new ObjectData
+            {
+                prefabIndex = randomFood,
+                cell = coord
+            });
         }
     }
 
@@ -222,28 +332,12 @@ public class BoardManager : MonoBehaviour
         }
     }
 
-    public void SetCellTile(Vector2Int cellIndex, Tile tile)
-    {
-        m_Tilemap.SetTile(new Vector3Int(cellIndex.x, cellIndex.y, 0), tile);
+    // ====== Limpiar tablero ======
 
-    }
-    void AddObject(CellObject obj, Vector2Int coord)
-    {
-        CellData data = m_BoardData[coord.x, coord.y];
-        obj.transform.position = CellToWorld(coord);
-        data.ContainedObject = obj;
-        obj.Init(coord);
-    }
-    public Tile GetCellTile(Vector2Int cellIndex)
-    {
-        return m_Tilemap.GetTile<Tile>(new Vector3Int(cellIndex.x,     cellIndex.y, 0));
-    }
     public void Clean()
     {
-        //no board data, so exit early, nothing to clean
-        if(m_BoardData == null)
+        if (m_BoardData == null || m_Tilemap == null)
             return;
-
 
         for (int y = 0; y < Height; ++y)
         {
@@ -253,13 +347,10 @@ public class BoardManager : MonoBehaviour
 
                 if (cellData.ContainedObject != null)
                 {
-                    //CAREFUL! Destroy the GameObject NOT just cellData.ContainedObject
-                    //Otherwise what you are destroying is the JUST CellObject COMPONENT
-                    //and not the whole gameobject with sprite
                     Destroy(cellData.ContainedObject.gameObject);
                 }
 
-                SetCellTile(new Vector2Int(x,y), null);
+                SetCellTile(new Vector2Int(x, y), null);
             }
         }
     }

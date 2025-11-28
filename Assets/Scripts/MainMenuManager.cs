@@ -10,6 +10,7 @@ public class MainMenuManager : MonoBehaviour
     private Button OptionsButton;
     public AudioManager sm;
     public GameObject UiOptions;
+    public GameObject UiLoadMenu;
 
     void Start()
     {
@@ -38,10 +39,7 @@ public class MainMenuManager : MonoBehaviour
 
     private void OnStartClicked()
     {
-        if (AudioManager.Instance != null)
-            AudioManager.Instance.PlayGameMusic();
-        
-        SceneManager.LoadScene("Main");
+        UiLoadMenu.SetActive(true);
     }
 
     private void OnQuitClicked()
