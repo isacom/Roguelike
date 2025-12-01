@@ -2,6 +2,7 @@ using UnityEngine;
 
 public class FoodObject : CellObject
 {
+    [HideInInspector] public int prefabIndex;
     public int AmountGranted = 10;
     private AudioManager sm;
 

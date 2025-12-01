@@ -79,7 +79,6 @@ public class GameManager : MonoBehaviour
     {
         m_FoodAmount += amount;
         m_FoodLabel.text = "Food : " + m_FoodAmount;
-        BoardManager.SaveCurrentLevel(m_FoodAmount);
         if (m_FoodAmount <= 0)
         {
             PlayerController.GameOver();
