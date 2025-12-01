@@ -3,6 +3,7 @@ using UnityEngine.Tilemaps;
 
 public class WallObject : CellObject
 {
+    [HideInInspector] public int prefabIndex;
     public Tile[] ObstacleTile;
     public int MaxHealth = 3;
     private AudioManager sm;

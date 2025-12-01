@@ -2,6 +2,7 @@ using UnityEngine;
 
 public class EnemyObject : CellObject
 {
+    [HideInInspector] public int prefabIndex;
     public int Health = 3;
 
     private int m_CurrentHealth;
